@@ -19,6 +19,21 @@ fetching https://media.npr.org/assets/img/2019/01/02/gettyimages-1058306908-0b38
 
 <img src="sample.png">
 
+
+### To ONNX
+
+To convert this to openVINO I need to convert this to ONNX Runtime, however that does not work correctly:
+```
+/usr/local/lib/python3.9/site-packages/torch/onnx/utils.py:299: UserWarning: It is recommended that constant folding be turned off ('do_constant_folding=False') when exporting the model in training-amenable mode, i.e. with 'training=TrainingMode.TRAIN' or 'training=TrainingMode.PRESERVE' (when model is in training mode). Otherwise, some learnable model parameters may not translate correctly in the exported ONNX model because constant folding mutates model parameters. Please consider turning off constant folding or setting the training=TrainingMode.EVAL.
+  warnings.warn("It is recommended that constant folding be turned off ('do_constant_folding=False') "
+/usr/local/lib/python3.9/site-packages/torch/onnx/symbolic_helper.py:266: UserWarning: You are trying to export the model with onnx:Upsample for ONNX opset version 9. This operator might cause results to not match the expected results by PyTorch.
+ONNX's Upsample/Resize operator did not match Pytorch's Interpolation until opset 11. Attributes to determine how to transform the input were added in onnx:Resize in opset 11 to support Pytorch's behavior (like coordinate_transformation_mode and nearest_mode).
+We recommend using opset 11 and above for models using this operator. 
+  warnings.warn("You are trying to export the model with " + onnx_op + " for ONNX opset version "
+/usr/local/lib/python3.9/site-packages/torch/onnx/symbolic_helper.py:182: UserWarning: ONNX export failed on upsample_bilinear2d because align_corners == True not supported
+  warnings.warn("ONNX export failed on " + op + " because " + msg + " not supported")
+```
+
 ## Introduction
 This is a pytorch realization of MSPN proposed in [ Rethinking on Multi-Stage Networks for Human Pose Estimation ][1]. In this work, we design an effective network MSPN to fulfill human pose estimation task.
 
@@ -63,6 +78,6 @@ You can contact us by email published in our [paper][1] or fenglinglwb@gmail.com
 [6]: https://drive.google.com/open?id=1MW27OY_4YetEZ4JiD4PltFGL_1-caECy
 [7]: https://github.com/chenyilun95/tf-cpn
 [8]: https://arxiv.org/abs/1711.07319
-[9]: 
+[9]: https://github.com/megvii-detection/MSPN
 This repo is also linked to [github][9].
 
