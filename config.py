@@ -9,14 +9,14 @@ import os.path as osp
 import argparse
 
 from easydict import EasyDict as edict
-from dataset.attribute import load_dataset
-from cvpack.utils.pyt_utils import ensure_dir
+# from dataset.attribute import load_dataset
+# from cvpack.utils.pyt_utils import ensure_dir
 
 
 class Config:
     # -------- Directoy Config -------- #
     USER = getpass.getuser()
-    ROOT_DIR = os.environ['MSPN_HOME']
+    ROOT_DIR = osp.dirname(__file__)
     OUTPUT_DIR = osp.join(ROOT_DIR, 'model_logs', USER,
             osp.split(osp.split(osp.realpath(__file__))[0])[1])
     TEST_DIR = osp.join(OUTPUT_DIR, 'test_dir')
@@ -30,17 +30,28 @@ class Config:
 
     DATASET = edict()
     DATASET.NAME = 'COCO'
-    dataset = load_dataset(DATASET.NAME)
-    DATASET.KEYPOINT = dataset.KEYPOINT
+    # dataset = load_dataset(DATASET.NAME)
+    DATASET.KEYPOINT = {'NUM': 17,
+                        'FLIP_PAIRS': [[1, 2],
+                                       [3, 4],
+                                       [5, 6],
+                                       [7, 8],
+                                       [9, 10],
+                                       [11, 12],
+                                       [13, 14],
+                                       [15, 16]],
+                        'UPPER_BODY_IDS': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                        'LOWER_BODY_IDS': [11, 12, 13, 14, 15, 16],
+                        'LOAD_MIN_NUM': 1}
 
     INPUT = edict()
     INPUT.NORMALIZE = True
-    INPUT.MEANS = [0.406, 0.456, 0.485] # bgr
-    INPUT.STDS = [0.225, 0.224, 0.229]
 
     # edict will automatcally convert tuple to list, so ..
-    INPUT_SHAPE = dataset.INPUT_SHAPE
-    OUTPUT_SHAPE = dataset.OUTPUT_SHAPE
+    INPUT.MEANS = [0.406, 0.456, 0.485]
+    INPUT.STDS = [0.225, 0.224, 0.229]
+    INPUT_SHAPE = (256, 192)
+    OUTPUT_SHAPE = (64, 48)
 
     # -------- Model Config -------- #
     MODEL = edict()
@@ -76,30 +87,47 @@ class Config:
 
     RUN_EFFICIENT = False 
     # -------- Test Config -------- #
-    TEST = dataset.TEST
-    TEST.IMS_PER_GPU = 32 
+    TEST = edict({'FLIP': True,
+            'X_EXTENTION': 0.09,
+            'Y_EXTENTION': 0.135,
+            'SHIFT_RATIOS': [0.25],
+            'GAUSSIAN_KERNEL': 5,
+            'IMS_PER_GPU': 32})
+    TEST.IMS_PER_GPU = 32
 
 
-config = Config()
-cfg = config
+def get_config(dataset):
+    config = Config()
+    if dataset == "coco":
+        config.DATASET.NAME = 'COCO'
+        config.SOLVER.CHECKPOINT_PERIOD = 2400
+        config.SOLVER.MAX_ITER = 96000
+        config.RUN_EFFICIENT = False
+    else:
+        config.DATASET.NAME = 'MPII'
+        config.SOLVER.CHECKPOINT_PERIOD = 1600
+        config.SOLVER.MAX_ITER = 28800
+        config.RUN_EFFICIENT = True
+    return config
 
 
-def link_log_dir():
+def link_log_dir(config):
     if not osp.exists('./log'):
-        ensure_dir(config.OUTPUT_DIR)
+        assert os.path.exists(config.OUTPUT_DIR)
         cmd = 'ln -s ' + config.OUTPUT_DIR + ' log'
         os.system(cmd)
 
 
 def make_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-            '-log', '--linklog', default=False, action='store_true')
+    parser.add_argument('-log', '--linklog', default=False, action='store_true')
+    parser.add_argument('--dataset', choices = ["coco", "mpii"], default="coco", help = "which dataset to use")
     return parser
 
 
 if __name__ == '__main__':
     parser = make_parser()
     args = parser.parse_args()
+    config = get_config(args.dataset)
     if args.linklog:
         link_log_dir()
