@@ -17,6 +17,8 @@ fetching https://media.npr.org/assets/img/2019/01/02/gettyimages-1058306908-0b38
 ----------------------------------------------------------------------
 ```
 
+<img src="sample.png">
+
 ## Introduction
 This is a pytorch realization of MSPN proposed in [ Rethinking on Multi-Stage Networks for Human Pose Estimation ][1]. In this work, we design an effective network MSPN to fulfill human pose estimation task.
 
